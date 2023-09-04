@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pam.alembooks.AllMapper">
+	<insert id="addUser"
+		parameterType="com.pam.alembooks.User">
+	<![CDATA[
+		insert into users (user_id, pw, user_name) values (#{user_id}, #{pw}, #{name})
+	]]>
+	</insert>
+	<insert id="regBook"
+		parameterType="com.pam.alembooks.Book">
+	<![CDATA[
+		insert into book (book_id, title) values (#{book_id}, #{title})
+	]]>
+	</insert>
+	<update id="modifyBook">
+	<![CDATA[
+		UPDATE book SET book_id=#{new_id}, title=#{title} where book_id=#{old_id}
+	]]>
+	</update>
+	<update id="book_return">
+	<![CDATA[
+		UPDATE borrow SET is_return=now() where book_id=#{book_id} and is_return is null
+	]]>
+	</update>
+	<select id="getHistory"
+		resultType="com.pam.alembooks.BookHistory">
+	<![CDATA[
+		select * from borrow
+		inner join users on users.user_id=borrow.user_id
+		inner join book on borrow.book_id=book.book_id
+		where book.book_id=#{book_id}
+	]]>
+	</select>
+	<insert id="borrow">
+	<![CDATA[
+		insert into borrow(user_id, book_id, borrow_on) 
+		select '${user_id}', ${book_id}, now() from dual
+		where not exists(
+			select book_id from borrow where book_id=${book_id} and is_return is null
+		)
+	]]>
+	</insert>
+</mapper>
